@@ -95,6 +95,17 @@ def get_part manga, part
     page_url = "#{url}/#{index}.html"
     document = Nokogiri::HTML open page_url
     source = document.at('#image')['src']
+    # Encrypted images
+    if not source and document.at('#parImg')
+      $status = 1
+      STDERR.puts <<-EOF.gsub /^ +/, ''
+        Something went wrong while searching image
+        URL: #{page_url}
+        Error: Encrypted image
+      EOF
+      page_number += 1
+      next
+    end
     # Skip ads
     if source.match %r(/lels/)
       next
