@@ -41,6 +41,8 @@ def main arguments
     exit 1
   end
 
+  exit $status
+
 end
 
 def get_manga manga
@@ -93,7 +95,16 @@ def get_part manga, part
     page = "%0#{complement}d" % index
     extension = File.extname source
     destination = destination_directory + (page + extension)
-    download source, destination
+    # Exceptions
+    begin
+      download source, destination
+    rescue Exception => error
+      $status = 1
+      STDERR.puts error.message
+      destination.delete if destination.exist?
+      STDERR.puts '-' + destination.to_path
+      next
+    end
     puts destination
     page_number += 1
   end
