@@ -92,7 +92,7 @@ def get_part manga, part
     if source.match %r(/lels/)
       next
     end
-    page = "%0#{complement}d" % index
+    page = "%0#{complement}d" % page_number
     extension = File.extname source
     destination = destination_directory + (page + extension)
     # Exceptions
