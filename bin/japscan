@@ -1,0 +1,86 @@
+#!/usr/bin/env ruby
+
+require 'nokogiri'
+require 'open-uri'
+require 'pathname'
+
+# Coding style is highly procedural,
+# giving feed back as soon.
+
+def main arguments
+
+  command = 'japscan'
+  site = 'japscan.com'
+
+  usage = <<-EOF.gsub /^ +/, ''
+    Usage: #{command} <uri>
+    Where <uri> must match #{site}/lecture-en-ligne/<manga>/<part>
+    Pages are saved to #{site}-<manga>-<part>/
+    That is not configurable
+  EOF
+
+  uri = arguments.first
+
+  if not uri
+    STDERR.puts usage
+    exit 1
+  end
+
+  match = uri.match(%r(#{site}/lecture-en-ligne/([[:alnum:]-]+)/([[:alnum:]-]+)))
+
+  if not match
+    STDERR.puts usage
+    exit 1
+  end
+
+  manga, part = match.captures
+
+  # <site>-<manga>-<part>/
+  destination_directory = Pathname [site, manga, part].join '-'
+
+  url = "http://#{site}/lecture-en-ligne/#{manga}/#{part}"
+
+  document = Nokogiri::HTML open url
+
+  # Pagination looks like:
+  # ╭─────────────────────────────────────────────────────────────────────────╮
+  # │#back_chapter #back_link 1 2 <ads> … 97 98 <ads> #next_link #next_chapter│
+  # ╰─────────────────────────────────────────────────────────────────────────╯
+  # Complement variable is used to pad pages with zeros.
+  # Use case is when sort is alphabetical.
+  # There is 2 ads, at the beginning and ending of scans.
+  # As ads are skipped from the downloading, we use the variable ads count to adjust complement value.
+  # For example: (101 pages, complement: 3) − (2 ads) → (99 pages, complement: 2)
+  # That value is hard coded to avoid searching for ads before processing downloading.
+  last_page_number = document.search('#pagination ul li a:not(#next_link):not(#next_chapter)').last['href'].match(/(\d+).html/).captures.first.to_i
+  ads_count = 2
+  complement = (last_page_number - ads_count).to_s.length
+
+  destination_directory.mkdir unless destination_directory.exist?
+  puts "#{destination_directory}/"
+
+  page_number = 1
+  (1..last_page_number).each do |index|
+    document = Nokogiri::HTML open "#{url}/#{index}.html"
+    source = document.at('#image')['src']
+    # Skip ads
+    if source.match %r(/lels/)
+      next
+    end
+    page = "%0#{complement}d" % index
+    extension = File.extname source
+    destination = destination_directory + (page + extension)
+    download source, destination
+    puts destination
+    page_number += 1
+  end
+
+end
+
+def download uri, path
+  File.open(path, 'w') do |file|
+    IO.copy_stream (open uri), file
+  end
+end
+
+main ARGV
