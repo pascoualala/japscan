@@ -14,7 +14,9 @@ def main arguments
 
   usage = <<-EOF.gsub /^ +/, ''
     Usage: #{$command} <uri>
-    Where <uri> must match #{$site}/lecture-en-ligne/<manga>/<part>
+    Where <uri> must match:
+    – #{$site}/mangas/<manga>
+    – #{$site}/lecture-en-ligne/<manga>/<part>
     Pages are saved to #{$site}-<manga>-<part>/
     That is not configurable
   EOF
@@ -26,16 +28,31 @@ def main arguments
     exit 1
   end
 
-  match = uri.match(%r(#{$site}/lecture-en-ligne/([[:alnum:]-]+)/([[:alnum:]-]+)))
+  $regex_manga = %r(#{$site}/mangas/([[:alnum:]-]+))
+  $regex_part = %r(#{$site}/lecture-en-ligne/([[:alnum:]-]+)/([[:alnum:]-]+))
 
-  if not match
+  case uri
+  when $regex_manga
+    get_manga $1
+  when $regex_part
+    get_part $1, $2
+  else
     STDERR.puts usage
     exit 1
   end
 
-  manga, part = match.captures
+end
 
-  get_part manga, part
+def get_manga manga
+
+  url = "http://#{$site}/mangas/#{manga}"
+
+  document = Nokogiri::HTML open url
+
+  document.search('#liste_chapitres ul li a').reverse_each do |node|
+    manga, part = node['href'].match($regex_part).captures
+    get_part manga, part
+  end
 
 end
 

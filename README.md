@@ -22,7 +22,10 @@ Usage
 japscan <uri>
 ```
 
-Where `<uri>` must match `japscan.com/lecture-en-ligne/<manga>/<part>`.
+Where `<uri>` must match:
+
+- `japscan.com/mangas/<manga>`
+- `japscan.com/lecture-en-ligne/<manga>/<part>`
 
 Pages are saved to `japscan.com-<manga>-<part>/`.
 
