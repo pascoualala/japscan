@@ -86,7 +86,8 @@ def get_part manga, part
 
   page_number = 1
   (1..last_page_number).each do |index|
-    document = Nokogiri::HTML open "#{url}/#{index}.html"
+    page_url = "#{url}/#{index}.html"
+    document = Nokogiri::HTML open page_url
     source = document.at('#image')['src']
     # Skip ads
     if source.match %r(/lels/)
@@ -100,9 +101,15 @@ def get_part manga, part
       download source, destination
     rescue Exception => error
       $status = 1
-      STDERR.puts error.message
+      STDERR.puts <<-EOF.gsub /^ +/, ''
+        Something went wrong while downloading
+        URL: #{page_url}
+        Error: #{error.message}
+        Source: #{source}
+        Destination: #{destination}
+      EOF
       destination.delete if destination.exist?
-      STDERR.puts '-' + destination.to_path
+      puts '-' + destination.to_path
       next
     end
     puts destination
