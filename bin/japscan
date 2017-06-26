@@ -96,6 +96,10 @@ def get_part manga, part
     page = "%0#{complement}d" % page_number
     extension = File.extname source
     destination = destination_directory + (page + extension)
+    if destination.exist?
+      puts ' ' + destination.to_path
+      next
+    end
     # Exceptions
     begin
       download source, destination
