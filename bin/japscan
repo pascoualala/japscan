@@ -81,8 +81,14 @@ def get_part manga, part
   ads_count = 2
   complement = (last_page_number - ads_count).to_s.length
 
-  destination_directory.mkdir unless destination_directory.exist?
-  puts "#{destination_directory}/"
+  status_code =
+  if destination_directory.exist?
+    ' '
+  else
+    destination_directory.mkdir
+    ''
+  end
+  puts "#{status_code}#{destination_directory}/"
 
   page_number = 1
   (1..last_page_number).each do |index|
