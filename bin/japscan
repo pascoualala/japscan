@@ -9,13 +9,13 @@ require 'pathname'
 
 def main arguments
 
-  command = 'japscan'
-  site = 'japscan.com'
+  $command = 'japscan'
+  $site = 'japscan.com'
 
   usage = <<-EOF.gsub /^ +/, ''
-    Usage: #{command} <uri>
-    Where <uri> must match #{site}/lecture-en-ligne/<manga>/<part>
-    Pages are saved to #{site}-<manga>-<part>/
+    Usage: #{$command} <uri>
+    Where <uri> must match #{$site}/lecture-en-ligne/<manga>/<part>
+    Pages are saved to #{$site}-<manga>-<part>/
     That is not configurable
   EOF
 
@@ -26,7 +26,7 @@ def main arguments
     exit 1
   end
 
-  match = uri.match(%r(#{site}/lecture-en-ligne/([[:alnum:]-]+)/([[:alnum:]-]+)))
+  match = uri.match(%r(#{$site}/lecture-en-ligne/([[:alnum:]-]+)/([[:alnum:]-]+)))
 
   if not match
     STDERR.puts usage
@@ -35,10 +35,16 @@ def main arguments
 
   manga, part = match.captures
 
-  # <site>-<manga>-<part>/
-  destination_directory = Pathname [site, manga, part].join '-'
+  get_part manga, part
 
-  url = "http://#{site}/lecture-en-ligne/#{manga}/#{part}"
+end
+
+def get_part manga, part
+
+  # <site>-<manga>-<part>/
+  destination_directory = Pathname [$site, manga, part].join '-'
+
+  url = "http://#{$site}/lecture-en-ligne/#{manga}/#{part}"
 
   document = Nokogiri::HTML open url
 
