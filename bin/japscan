@@ -16,24 +16,26 @@ def main arguments
   $site = 'japscan.com'
 
   usage = <<-EOF.gsub /^ +/, ''
-    Usage: #{$command} <uri>
+    Usage: #{$command} <uri> [destination]
     Where <uri> must match:
     – #{$site}/mangas/<manga>
     – #{$site}/lecture-en-ligne/<manga>/<token>
     Where <token> must match:
     – <volume>-<number>: volume
     – <number>: scan
-    Pages are saved to #{$site}/<manga>/<part>/<number>.cbz,
+    Pages are saved to <destination>/<manga>/<part>/<number>.cbz,
     using the comic book archive format.
-    That is not configurable
+    Default value of <destination> is japscan.com
   EOF
 
-  uri = arguments.first
+  uri, $destination = arguments
 
   if not uri
     STDERR.puts usage
     exit 1
   end
+
+  $destination ||= $site
 
   $regex_manga = %r(#{$site}/mangas/([[:alnum:]-]+))
   $regex_part = %r(#{$site}/lecture-en-ligne/([[:alnum:]-]+)/(volume-)?([0-9]+))
@@ -71,8 +73,8 @@ end
 
 def get_part manga, part, number
 
-  # <site>/<manga>/<part>/<number>/
-  destination_directory = Pathname($site) + manga + part + number
+  # <destination>/<manga>/<part>/<number>/
+  destination_directory = Pathname($destination) + manga + part + number
 
   uri_part = part == 'volume' ? "volume-#{number}" : number
   url = "http://#{$site}/lecture-en-ligne/#{manga}/#{uri_part}"

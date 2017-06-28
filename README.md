@@ -20,7 +20,7 @@ Usage
 -----
 
 ```
-japscan <uri>
+japscan <uri> [destination]
 ```
 
 Where `<uri>` must match:
@@ -33,10 +33,10 @@ Where `<token>` must match:
 - `<volume>-<number>`: volume
 - `<number>`: scan
 
-Pages are saved to `japscan.com/<manga>/<part>/<number>.cbz`,
+Pages are saved to `<destination>/<manga>/<part>/<number>.cbz`,
 using the [Comic book archive] format.
 
-That is not configurable.
+Default value of `<destination>` is `japscan.com`.
 
 When bad or no argument are provided, display a help message and quit with error.
 
