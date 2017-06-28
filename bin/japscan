@@ -135,7 +135,7 @@ def get_part manga, part, number
     extension = File.extname source
     destination = destination_directory + (page + extension)
     if destination.exist?
-      puts ' ' + destination.to_path
+      puts ' ' + destination.to_s
       page_number += 1
       next
     end
@@ -152,7 +152,7 @@ def get_part manga, part, number
         Destination: #{destination}
       EOF
       destination.delete if destination.exist?
-      puts '-' + destination.to_path
+      puts '-' + destination.to_s
       next
     end
     puts destination
