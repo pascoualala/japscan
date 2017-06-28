@@ -76,6 +76,13 @@ def get_part manga, part, number
   # <destination>/<manga>/<part>/<number>/
   destination_directory = Pathname($destination) + manga + part + number
 
+  archive = destination_directory.dirname + (destination_directory.basename.to_s + '.cbz')
+
+  if archive.exist?
+    puts ' ' + archive.to_s
+    return
+  end
+
   uri_part = part == 'volume' ? "volume-#{number}" : number
   url = "http://#{$site}/lecture-en-ligne/#{manga}/#{uri_part}"
 
@@ -152,14 +159,14 @@ def get_part manga, part, number
     page_number += 1
   end
 
-  directory = destination_directory.basename
   success = system <<-EOF
-    cd #{destination_directory}/..
-    zip --recurse-paths #{directory}.cbz #{directory}
-    echo #{destination_directory}/#{directory}.cbz
+    cd #{destination_directory.dirname}
+    zip --recurse-paths #{archive.basename} #{destination_directory.basename}
   EOF
 
-  if not success
+  if success
+    puts archive
+  else
     $status = 1
   end
 
