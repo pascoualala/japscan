@@ -153,11 +153,15 @@ def get_part manga, part, number
   end
 
   directory = destination_directory.basename
-  system <<-EOF
+  success = system <<-EOF
     cd #{destination_directory}/..
     zip --recurse-paths #{directory}.cbz #{directory}
     echo #{destination_directory}/#{directory}.cbz
   EOF
+
+  if not success
+    $status = 1
+  end
 
   puts '-' + destination_directory.to_s + '/'
   FileUtils.rm_rf destination_directory
