@@ -38,7 +38,7 @@ def main arguments
   $destination ||= ENV['JAPSCAN_DEFAULT_DESTINATION'] || $site
 
   $regex_manga = %r(#{$site}/mangas/([[:alnum:]-]+))
-  $regex_part = %r(#{$site}/lecture-en-ligne/([[:alnum:]-]+)/(volume-)?([0-9]+))
+  $regex_part = %r(#{$site}/lecture-en-ligne/([[:alnum:]-]+)/(volume-)?([.0-9]+))
 
   case uri
   when $regex_manga
