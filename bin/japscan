@@ -3,11 +3,14 @@
 require 'nokogiri'
 require 'open-uri'
 require 'pathname'
+require 'fileutils'
 
 # Coding style is highly procedural,
 # giving feed back as soon.
 
 def main arguments
+
+  $status = 0
 
   $command = 'japscan'
   $site = 'japscan.com'
@@ -16,8 +19,12 @@ def main arguments
     Usage: #{$command} <uri>
     Where <uri> must match:
     – #{$site}/mangas/<manga>
-    – #{$site}/lecture-en-ligne/<manga>/<part>
-    Pages are saved to #{$site}-<manga>-<part>/
+    – #{$site}/lecture-en-ligne/<manga>/<token>
+    Where <token> must match:
+    – <volume>-<number>: volume
+    – <number>: scan
+    Pages are saved to #{$site}/<manga>/<part>/<number>.cbz,
+    using the comic book archive format.
     That is not configurable
   EOF
 
@@ -29,13 +36,16 @@ def main arguments
   end
 
   $regex_manga = %r(#{$site}/mangas/([[:alnum:]-]+))
-  $regex_part = %r(#{$site}/lecture-en-ligne/([[:alnum:]-]+)/([[:alnum:]-]+))
+  $regex_part = %r(#{$site}/lecture-en-ligne/([[:alnum:]-]+)/(volume-)?([0-9]+))
 
   case uri
   when $regex_manga
     get_manga $1
   when $regex_part
-    get_part $1, $2
+    manga = $1
+    part = $2 ? 'volume' : 'scan'
+    number = $3
+    get_part manga, part, number
   else
     STDERR.puts usage
     exit 1
@@ -52,18 +62,20 @@ def get_manga manga
   document = Nokogiri::HTML open url
 
   document.search('#liste_chapitres ul li a').reverse_each do |node|
-    manga, part = node['href'].match($regex_part).captures
-    get_part manga, part
+    manga, token, number = node['href'].match($regex_part).captures
+    part = token ? 'volume' : 'scan'
+    get_part manga, part, number
   end
 
 end
 
-def get_part manga, part
+def get_part manga, part, number
 
-  # <site>-<manga>-<part>/
-  destination_directory = Pathname [$site, manga, part].join '-'
+  # <site>/<manga>/<part>/<number>/
+  destination_directory = Pathname($site) + manga + part + number
 
-  url = "http://#{$site}/lecture-en-ligne/#{manga}/#{part}"
+  uri_part = part == 'volume' ? "volume-#{number}" : number
+  url = "http://#{$site}/lecture-en-ligne/#{manga}/#{uri_part}"
 
   document = Nokogiri::HTML open url
 
@@ -96,10 +108,10 @@ def get_part manga, part
   if destination_directory.exist?
     ' '
   else
-    destination_directory.mkdir
+    FileUtils.mkdir_p destination_directory
     ''
   end
-  puts "#{status_code}#{destination_directory}/"
+  puts status_code + destination_directory.to_s + '/'
 
   page_number = 1
   (1..last_page_number).each do |index|
@@ -137,6 +149,15 @@ def get_part manga, part
     puts destination
     page_number += 1
   end
+
+  directory = destination_directory.basename
+  system <<-EOF
+    cd #{destination_directory}/..
+    zip --recurse-paths #{directory}.cbz #{directory}
+  EOF
+
+  puts '-' + destination_directory.to_s + '/'
+  FileUtils.rm_rf destination_directory
 
 end
 
