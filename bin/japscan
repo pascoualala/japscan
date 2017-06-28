@@ -88,6 +88,19 @@ def get_part manga, part, number
 
   document = Nokogiri::HTML open url
 
+  # Redirection
+  # Examples
+  # – http://japscan.com/lecture-en-ligne/one-punch-man/94.3/
+  if not document.at('#pagination')
+    $status = 1
+    STDERR.puts <<-EOF.gsub /^ +/, ''
+      Something went wrong
+      URL: #{url}
+      Error: Redirected
+    EOF
+    return
+  end
+
   # Encrypted images
   if document.at('#parImg')
     $status = 1
