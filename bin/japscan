@@ -99,6 +99,15 @@ def get_part manga, part, number
     return
   end
 
+  status_code =
+  if destination_directory.exist?
+    ' '
+  else
+    FileUtils.mkdir_p destination_directory
+    ''
+  end
+  puts status_code + destination_directory.to_s + '/'
+
   # Pagination looks like:
   # ╭─────────────────────────────────────────────────────────────────────────╮
   # │#back_chapter #back_link 1 2 <ads> … 97 98 <ads> #next_link #next_chapter│
@@ -109,54 +118,83 @@ def get_part manga, part, number
   # As ads are skipped from the downloading, we use the variable ads count to adjust complement value.
   # For example: (101 pages, complement: 3) − (2 ads) → (99 pages, complement: 2)
   # That value is hard coded to avoid searching for ads before processing downloading.
-  last_page_number = document.search('#pagination ul li a:not(#next_link):not(#next_chapter)').last['href'].match(/(\d+).html/).captures.first.to_i
-  ads_count = 2
-  complement = (last_page_number - ads_count).to_s.length
+  pages = document.search '#pagination ul li a:not(#back_chapter):not(#back_link):not(#next_link):not(#next_chapter)'
 
-  status_code =
-  if destination_directory.exist?
-    ' '
-  else
-    FileUtils.mkdir_p destination_directory
-    ''
-  end
-  puts status_code + destination_directory.to_s + '/'
-
-  page_number = 1
-  (1..last_page_number).each do |index|
-    page_url = "#{url}/#{index}.html"
-    document = Nokogiri::HTML open page_url
-    source = document.at('#image')['src']
-    # Skip ads
-    if source.match %r(/lels/)
-      next
-    end
-    page = "%0#{complement}d" % page_number
-    extension = File.extname source
-    destination = destination_directory + (page + extension)
-    if destination.exist?
-      puts ' ' + destination.to_s
+  if pages.empty?
+    # Examples
+    # – http://japscan.com/lecture-en-ligne/gosu/43/
+    first_image_source = document.at('#images img')['src']
+    complement = first_image_source.match(/([0-9]+)[.][a-z]+/).captures.first.length
+    page_number = 1
+    loop do
+      page = "%0#{complement}d" % page_number
+      extension = File.extname first_image_source
+      source = File.dirname(first_image_source) + '/' + page + extension
+      destination = destination_directory + (page + extension)
+      if destination.exist?
+        puts ' ' + destination.to_s
+        page_number += 1
+        next
+      end
+      # Exceptions
+      begin
+        download source, destination
+      rescue Exception => error
+        $status = 1
+        STDERR.puts <<-EOF.gsub /^ +/, ''
+          Something went wrong while downloading
+          URL: #{url}
+          Error: #{error.message}
+          Source: #{source}
+          Destination: #{destination}
+        EOF
+        destination.delete if destination.exist?
+        puts '-' + destination.to_s
+        break
+      end
+      puts destination
       page_number += 1
-      next
     end
-    # Exceptions
-    begin
-      download source, destination
-    rescue Exception => error
-      $status = 1
-      STDERR.puts <<-EOF.gsub /^ +/, ''
-        Something went wrong while downloading
-        URL: #{page_url}
-        Error: #{error.message}
-        Source: #{source}
-        Destination: #{destination}
-      EOF
-      destination.delete if destination.exist?
-      puts '-' + destination.to_s
-      next
+  else
+    last_page_number = pages.last['href'].match(/(\d+).html/).captures.first.to_i
+    ads_count = 2
+    complement = (last_page_number - ads_count).to_s.length
+    page_number = 1
+    (1..last_page_number).each do |index|
+      page_url = "#{url}/#{index}.html"
+      document = Nokogiri::HTML open page_url
+      source = document.at('#image')['src']
+      # Skip ads
+      if source.match %r(/lels/)
+        next
+      end
+      page = "%0#{complement}d" % page_number
+      extension = File.extname source
+      destination = destination_directory + (page + extension)
+      if destination.exist?
+        puts ' ' + destination.to_s
+        page_number += 1
+        next
+      end
+      # Exceptions
+      begin
+        download source, destination
+      rescue Exception => error
+        $status = 1
+        STDERR.puts <<-EOF.gsub /^ +/, ''
+          Something went wrong while downloading
+          URL: #{page_url}
+          Error: #{error.message}
+          Source: #{source}
+          Destination: #{destination}
+        EOF
+        destination.delete if destination.exist?
+        puts '-' + destination.to_s
+        next
+      end
+      puts destination
+      page_number += 1
     end
-    puts destination
-    page_number += 1
   end
 
   success = system <<-EOF
