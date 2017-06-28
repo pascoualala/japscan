@@ -1,6 +1,6 @@
 Download mangas from <http://japscan.com> (France).
 
-**One argument** – **No configuration** – **No ads** – **CBZ support** – **Cross-platform**
+**No ads** – **CBZ support** – **Cross-platform**
 
 Dependencies
 ------------
@@ -39,6 +39,13 @@ using the [Comic book archive] format.
 Default value of `<destination>` is `japscan.com`.
 
 When bad or no argument are provided, display a help message and quit with error.
+
+Variables
+---------
+
+JapScan makes use of the following environment variables:
+
+- `JAPSCAN_DEFAULT_DESTINATION`: `japscan.com`
 
 [Ruby]: https://ruby-lang.org
 [RubyGems]: https://rubygems.org
