@@ -168,8 +168,10 @@ def get_part manga, part, number
           Source: #{source}
           Destination: #{destination}
         EOF
-        destination.delete if destination.exist?
-        puts '-' + destination.to_s
+        if destination.exist?
+          destination.delete
+          puts '-' + destination.to_s
+        end
         if error_count >= error_count_setting
           break
         else
@@ -213,8 +215,10 @@ def get_part manga, part, number
           Source: #{source}
           Destination: #{destination}
         EOF
-        destination.delete if destination.exist?
-        puts '-' + destination.to_s
+        if destination.exist?
+          destination.delete
+          puts '-' + destination.to_s
+        end
         next
       end
       puts destination
