@@ -1,6 +1,6 @@
 Download mangas from <http://japscan.com> (France).
 
-**No ads** – **CBZ support** – **Cross-platform**
+**No ads** – **CBZ format** – **Cross-platform**
 
 Dependencies
 ------------
