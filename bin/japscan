@@ -5,8 +5,7 @@ require 'open-uri'
 require 'pathname'
 require 'fileutils'
 
-# Coding style is highly procedural,
-# giving feed back as soon.
+# Spaghetti code
 
 def main arguments
 
