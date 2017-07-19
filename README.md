@@ -40,6 +40,17 @@ Default value of `<destination>` is `japscan.com`.
 
 When bad or no argument are provided, display a help message and quit with error.
 
+Examples
+--------
+
+```
+japscan http://japscan.com/mangas/berserk/
+```
+
+```
+japscan http://japscan.com/mangas/berserk/ .
+```
+
 Variables
 ---------
 
