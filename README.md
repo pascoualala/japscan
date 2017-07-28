@@ -5,7 +5,8 @@ Download mangas from <http://japscan.com> (France).
 Dependencies
 ------------
 
-- [Nokogiri][]
+- [Ruby][]
+  - [Nokogiri][]
 - [7-Zip][] ([Comic book archive][] format)
 
 Dependencies are handled by the [Gem system][RubyGems].
