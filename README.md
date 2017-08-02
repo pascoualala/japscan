@@ -21,13 +21,13 @@ Usage
 -----
 
 ```
-japscan <uri> [destination]
+japscan <url> [destination]
 ```
 
-Where `<uri>` must match:
+Where `<url>` must match:
 
-- `japscan.com/mangas/<manga>`
-- `japscan.com/lecture-en-ligne/<manga>/<token>`
+- `http://japscan.com/mangas/<manga>`
+- `http://japscan.com/lecture-en-ligne/<manga>/<token>`
 
 Where `<token>` must match:
 

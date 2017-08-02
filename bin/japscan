@@ -15,10 +15,10 @@ def main arguments
   $site = 'japscan.com'
 
   usage = <<-EOF.gsub /^ +/, ''
-    Usage: #{$command} <uri> [destination]
-    Where <uri> must match:
-    – #{$site}/mangas/<manga>
-    – #{$site}/lecture-en-ligne/<manga>/<token>
+    Usage: #{$command} <url> [destination]
+    Where <url> must match:
+    – http://#{$site}/mangas/<manga>
+    – http://#{$site}/lecture-en-ligne/<manga>/<token>
     Where <token> must match:
     – <volume>-<number>: volume
     – <number>: scan
@@ -27,25 +27,28 @@ def main arguments
     Default value of <destination> is japscan.com
   EOF
 
-  uri, $destination = arguments
+  url, $destination = arguments
 
-  if not uri
+  if not url
     STDERR.puts usage
     exit 1
   end
 
   $destination ||= ENV['JAPSCAN_DEFAULT_DESTINATION'] || $site
 
-  $regex_manga = %r(#{$site}/mangas/([[:alnum:]-]+))
-  $regex_part = %r(#{$site}/lecture-en-ligne/([[:alnum:]-]+)/(volume-)?([.0-9]+))
+  $regex_manga = %r((?:([a-z]+)://(?:www[.])?)?#{$site}/mangas/([[:alnum:]-]+))
+  $regex_part = %r((?:([a-z]+)://(?:www[.])?)?#{$site}/lecture-en-ligne/([[:alnum:]-]+)/(volume-)?([.0-9]+))
 
-  case uri
+  case url
   when $regex_manga
-    get_manga $1
+    $protocol = $1 ? $1 : 'http'
+    manga = $2
+    get_manga manga
   when $regex_part
-    manga = $1
-    part = $2 ? 'volume' : 'scan'
-    number = $3
+    $protocol = $1 ? $1 : 'http'
+    manga = $2
+    part = $3 ? 'volume' : 'scan'
+    number = $4
     get_part manga, part, number
   else
     STDERR.puts usage
@@ -58,12 +61,13 @@ end
 
 def get_manga manga
 
-  url = "http://#{$site}/mangas/#{manga}"
+  url = "#{$protocol}://#{$site}/mangas/#{manga}"
 
   document = Nokogiri::HTML open url
 
   document.search('#liste_chapitres ul li a').reverse_each do |node|
-    manga, token, number = node['href'].match($regex_part).captures
+    protocol, manga, token, number = node['href'].match($regex_part).captures
+    $protocol = protocol ? protocol : 'http'
     part = token ? 'volume' : 'scan'
     get_part manga, part, number
   end
@@ -83,7 +87,7 @@ def get_part manga, part, number
   end
 
   uri_part = part == 'volume' ? "volume-#{number}" : number
-  url = "http://#{$site}/lecture-en-ligne/#{manga}/#{uri_part}"
+  url = "#{$protocol}://#{$site}/lecture-en-ligne/#{manga}/#{uri_part}"
 
   document = Nokogiri::HTML open url
 
