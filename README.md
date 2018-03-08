@@ -4,8 +4,7 @@ Download mangas from <http://japscan.com> (France).
 
 **No ads** – **CBZ format** – **Cross-platform**
 
-Dependencies
-------------
+## Dependencies
 
 - [Ruby][]
   - [Nokogiri][]
@@ -14,13 +13,11 @@ Dependencies
 Dependencies are handled by the [Gem system][RubyGems].
 Just make sure to have [Ruby][] before running `make`.
 
-Installation
-------------
+## Installation
 
 To install, just type `make install`.
 
-Usage
------
+## Usage
 
 ```
 japscan <url> [destination]
@@ -43,8 +40,7 @@ Default value of `<destination>` is `japscan.com`.
 
 When bad or no argument are provided, display a help message and quit with error.
 
-Examples
---------
+## Examples
 
 ```
 japscan http://japscan.com/mangas/berserk/
@@ -54,8 +50,7 @@ japscan http://japscan.com/mangas/berserk/
 japscan http://japscan.com/mangas/berserk/ .
 ```
 
-Variables
----------
+## Variables
 
 JapScan makes use of the following environment variables:
 
