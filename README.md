@@ -60,4 +60,4 @@ JapScan makes use of the following environment variables:
 [RubyGems]: https://rubygems.org
 [Nokogiri]: http://nokogiri.org
 [7-Zip]: http://7-zip.org
-[Comic book archive]: https://en.wikipedia.org/wiki/Comic_book_archive
+[Comic book archive]: https://wikipedia.org/wiki/Comic_book_archive
